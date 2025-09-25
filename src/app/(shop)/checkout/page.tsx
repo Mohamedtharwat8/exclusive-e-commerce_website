@@ -73,7 +73,7 @@ export default function Checkout() {
   }
   useEffect(() => {
     console.log(watch("paymentMethod"));
-  }, [watch("paymentMethod")]);
+  }, [watch]);
   return (
     <section className="py-10">
       <div className="container  mx-auto px-8">
