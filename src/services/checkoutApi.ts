@@ -3,15 +3,21 @@ import { ShippingAddress } from "@/interfaces/checkout";
 import { getToken } from "@/lib/getToken";
 
 export async function createOrder(body: ShippingAddress, cartId: string) {
+
   const token = await getToken();
+
   const paymentMethod = body.paymentMethod;
   console.log("paymentMethod", paymentMethod);
+  console.log("token", token);
 
   const URL =
     paymentMethod === "cash"
       ? `https://ecommerce.routemisr.com/api/v1/orders/${cartId}`
-      : `https://ecommerce.routemisr.com/api/v1/orders/checkout-session/${cartId}?url=${process.env.NEXTAUTH_URL}`;
+      : `https://ecommerce.routemisr.com/api/v1/orders/checkout-session/${cartId}?url=http://localhost:3000/`;
   try {
+
+    console.log("URL", URL);
+
     const res = await fetch(URL, {
       method: "POST",
       headers: {

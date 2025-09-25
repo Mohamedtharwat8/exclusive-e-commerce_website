@@ -28,7 +28,7 @@ export const authOptions: NextAuthOptions = {
           if (!res.ok) {
             throw new Error(data.message);
           }
-          const decodedToken = JSON.parse(atob(data.token.split('.')[1]));
+          const decodedToken = JSON.parse(Buffer.from(data.token.split('.')[1], 'base64').toString('utf-8'));
           console.log(decodedToken);
           return {
             //we need to put user id which is coming from data.token
