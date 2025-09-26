@@ -4,17 +4,11 @@ import { Product } from "@/interfaces/products";
 import { getSpecificBrand } from "@/services/brandsApi";
 import { getAllProducts } from "@/services/productsApi";
 
-type ShopByBrandPageProps = {
-  params: {
-    brandId: string;
-  };
-};
-
-export default async function ShopByBrandPage({
-  params,
-}: ShopByBrandPageProps) {
-  const { brandId } = params;
-
+export default async function BrandDetails({
+  params: { brandId },
+}: {
+  params: { brandId: string };
+}) {
   const { data: brand } = await getSpecificBrand(brandId);
   const { data: products }: { data: Product[] } = await getAllProducts({
     brand: brandId,
