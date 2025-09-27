@@ -7,11 +7,13 @@ import { Product } from "@/interfaces/products";
 import { getAllProducts, getProductDetails } from "@/services/productsApi";
 import { Star } from "lucide-react";
 
-export default async function ProductDetails({
-  params: { productId },
-}: {
-  params: { productId: string };
+
+export default async function ProductDetails(props: {
+  params: Promise<{ productId: string }>;
 }) {
+  const { productId } = await props.params;
+
+ 
   const { data: productDetails }: { data: Product } = await getProductDetails(
     productId
   );

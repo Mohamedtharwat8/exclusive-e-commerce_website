@@ -4,12 +4,10 @@ import { Product } from "@/interfaces/products";
 import { getSpecificCategory } from "@/services/categoriesApi";
 import { getAllProducts } from "@/services/productsApi";
 
-export default async function ShopByCategoryLayout({
-  params: { categoryId },
-}: {
-  params: { categoryId: string };
+export default async function ShopByCategoryLayout(props: {
+  params: Promise<{ categoryId: string }>;
 }) {
-  console.log("categoryId", categoryId);
+  const { categoryId } = await props.params;
   const { data: category } = await getSpecificCategory(categoryId);
   const { data: products }: { data: Product[] } = await getAllProducts({
     category: categoryId,

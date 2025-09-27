@@ -71,9 +71,15 @@ export default function Checkout() {
       console.log("payload", payload);
     });
   }
+  // useEffect(() => {
+  //   console.log(watch("paymentMethod"));
+  // }, [watch("paymentMethod")]);
+
+  const paymentValue = watch("paymentMethod");
+
   useEffect(() => {
-    console.log(watch("paymentMethod"));
-  }, [watch("paymentMethod")]);
+    console.log(paymentValue);
+  }, [paymentValue]);
   return (
     <section className="py-10">
       <div className="container  mx-auto px-8">

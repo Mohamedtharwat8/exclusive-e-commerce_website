@@ -13,28 +13,38 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
-
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { registerSchema } from "@/schemas/validationSchemas";
-
 import { RegisterPayload } from "@/types/types";
 import { handleRegister } from "@/services/registerAPI";
 import { useActionState, useEffect, useState } from "react";
 import { Eye, EyeOffIcon } from "lucide-react";
-const formState = {
+
+// Define proper initial state type
+interface FormState {
+  success: boolean;
+  error: any;
+  message: string | null;
+}
+
+const initialState: FormState = {
   success: false,
   error: {},
   message: null,
 };
 
 export default function Register() {
-  //formAction is a function that will trigger handleRegister which has the api call
-  const [action, formAction] = useActionState(handleRegister, formState);
   const router = useRouter();
-  // const [isLogging, setIsLogging] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showRePassword, setShowRePassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fix 1: Use useActionState correctly
+  const [state, formAction, isPending] = useActionState(
+    handleRegister,
+    initialState
+  );
 
   const form = useForm<RegisterPayload>({
     resolver: zodResolver(registerSchema),
@@ -47,28 +57,50 @@ export default function Register() {
       phone: "",
     },
   });
-  console.log("formActions", action);
 
-  // async function onSubmit(formData: RegisterPayload) {
-  //   const responseData = handleRegister(formData);
-  //   console.log(responseData);
-  // }
+  console.log("formActions", state);
 
+  // Fix 2: Handle form submission properly
+  const onSubmit = async (data: RegisterPayload) => {
+    setIsSubmitting(true);
+
+    // Create FormData from the form values
+    const formData = new FormData();
+    formData.append("name", data.name);
+    formData.append("email", data.email);
+    formData.append("password", data.password);
+    formData.append("rePassword", data.rePassword);
+    formData.append("phone", data.phone);
+
+    // Call the server action
+    formAction(formData);
+  };
+
+  // Fix 3: Proper useEffect for handling state changes
   useEffect(() => {
-    if (action) {
-      if (!action.success && action.message) {
-        toast.error(action.message, {
+    if (state) {
+      if (state.success && state.message) {
+        toast.success(state.message, {
           position: "top-center",
         });
-      }
-      if (action.success && action.message) {
-        router.push("/login");
-        toast.success("Registered successfully, Please login", {
+        setTimeout(() => {
+          router.push("/login");
+        }, 1000);
+      } else if (!state.success && state.message) {
+        toast.error(state.message, {
           position: "top-center",
         });
       }
     }
-  }, [action, router]);
+  }, [state, router]);
+
+  // Fix 4: Reset submitting state when state changes
+  useEffect(() => {
+    if (state) {
+      setIsSubmitting(false);
+    }
+  }, [state]);
+
   return (
     <section className="py-10">
       <div className="container mx-auto px-8">
@@ -88,9 +120,9 @@ export default function Register() {
             </h1>
             <p className="text-center">Enter your details below</p>
             <Form {...form}>
+              {/* Fix 5: Use onSubmit instead of action */}
               <form
-                action={formAction}
-                // onSubmit={form.handleSubmit(onSubmit)}
+                onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-8"
               >
                 {/* name */}
@@ -103,9 +135,7 @@ export default function Register() {
                       <FormControl>
                         <Input placeholder="gehad alaa" {...field} />
                       </FormControl>
-                      <FormMessage>
-                        {action.error?.name && action.error?.name[0]}
-                      </FormMessage>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -119,9 +149,7 @@ export default function Register() {
                       <FormControl>
                         <Input placeholder="example@.com" {...field} />
                       </FormControl>
-                      <FormMessage>
-                        {action.error?.email && action.error?.email[0]}
-                      </FormMessage>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -152,9 +180,7 @@ export default function Register() {
                           )}
                         </button>
                       </div>
-                      <FormMessage>
-                        {action.error?.password && action.error?.password[0]}
-                      </FormMessage>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -185,10 +211,7 @@ export default function Register() {
                           )}
                         </button>
                       </div>
-                      <FormMessage>
-                        {action.error?.rePassword &&
-                          action.error?.rePassword[0]}
-                      </FormMessage>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -202,9 +225,7 @@ export default function Register() {
                       <FormControl>
                         <Input placeholder="0123456789" {...field} type="tel" />
                       </FormControl>
-                      <FormMessage>
-                        {action.error?.phone && action.error?.phone[0]}
-                      </FormMessage>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -213,10 +234,11 @@ export default function Register() {
                     type="submit"
                     variant="destructive"
                     className="cursor-pointer"
-                    // disabled={isLogging}
+                    disabled={isSubmitting || isPending}
                   >
-                    {/* {isLogging ? "Logging in..." : "Login"} */}
-                    Sign Up
+                    {isSubmitting || isPending
+                      ? "Creating Account..."
+                      : "Sign Up"}
                   </Button>
                 </div>
               </form>
